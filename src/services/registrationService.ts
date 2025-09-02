@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 /* ========= Types ========= */
 export interface RegistrationData {
-  fullName: string
+  name: string
   email: string
   phone: string
   organization: string
@@ -49,7 +49,7 @@ export async function submitRegistration(
     })
 
     console.log("Starting registration submission with data:", {
-      name: data.fullName,
+      name: data.name,
       email: data.email,
       organization: data.organization,
     })
@@ -59,7 +59,7 @@ export async function submitRegistration(
       .from("registration_requests")
       .insert([
         {
-          full_name: data.fullName, // make sure this matches your table column
+          full_name: data.name, // make sure this matches your table column
           email: data.email,
           phone: data.phone,
           organization: data.organization,
@@ -91,7 +91,7 @@ export async function submitRegistration(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: data.fullName,
+        name: data.name,
         email: data.email,
         organization: data.organization,
       }),
