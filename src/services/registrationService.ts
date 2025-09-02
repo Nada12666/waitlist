@@ -1,5 +1,16 @@
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js'
 
+/* ========= Supabase Client ========= */
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("Missing Supabase environment variables. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env or Vercel settings.")
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+/* ========= Types ========= */
 export interface RegistrationData {
   fullName: string;
   email: string;
@@ -15,16 +26,30 @@ export interface RegistrationResponse {
   error?: string;
 }
 
+/* ========= Service ========= */
 export async function submitRegistration(data: RegistrationData): Promise<RegistrationResponse> {
   try {
+    // Check env vars before anything
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        message: "Supabase environment variables are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+        error: "Missing Supabase config",
+      };
+    }
+
+    console.log("🔎 Using Supabase client:", {
+      url: supabaseUrl,
+      anonKeyStart: supabaseAnonKey?.slice(0, 12), // don’t log full key
+    });
+
     console.log('Starting registration submission with data:', {
       name: data.fullName,
       email: data.email,
       organization: data.organization,
-      // Don't log sensitive data like phone numbers
     });
 
-    // Save to Supabase database
+    //Save to Supabase database
     const { data: insertData, error: dbError } = await supabase
       .from('registration_requests')
       .insert([
@@ -57,14 +82,13 @@ export async function submitRegistration(data: RegistrationData): Promise<Regist
     console.log('Data saved successfully to database:', insertData);
 
     // Send email via Supabase Edge Function
-    const emailApiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
-    
+    const emailApiUrl = `${supabaseUrl}/functions/v1/send-email`;
     console.log('Attempting to send email to:', emailApiUrl);
-    
+
     const emailResponse = await fetch(emailApiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -82,7 +106,6 @@ export async function submitRegistration(data: RegistrationData): Promise<Regist
         statusText: emailResponse.statusText,
         result: emailResult
       });
-      // Data is already saved, but email failed
       return {
         success: true,
         message: 'تم حفظ البيانات بنجاح، لكن فشل في إرسال البريد الإلكتروني. سنتواصل معك قريباً.',
