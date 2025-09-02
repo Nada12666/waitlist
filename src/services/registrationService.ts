@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 /* ========= Supabase Client ========= */
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error(
@@ -10,11 +10,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-const supabase = createClient(
-const supabaseUrl = 'https://jjatkmjggwtehzxfsbur.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
-)
-
+// ✅ Correct createClient usage
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 /* ========= Types ========= */
 export interface RegistrationData {
@@ -49,7 +46,7 @@ export async function submitRegistration(
 
     console.log("🔎 Using Supabase client:", {
       url: supabaseUrl,
-      anonKeyStart: supabaseAnonKey?.slice(0, 12), // don’t log full key
+      anonKeyStart: supabaseAnonKey?.slice(0, 12),
     })
 
     console.log("Starting registration submission with data:", {
@@ -63,7 +60,7 @@ export async function submitRegistration(
       .from("registration_requests")
       .insert([
         {
-          full_name: data.name, // make sure this matches your table column
+          name: data.name, // make sure this matches your table column
           email: data.email,
           phone: data.phone,
           organization: data.organization,
@@ -71,7 +68,7 @@ export async function submitRegistration(
           city: data.city,
         },
       ])
-      .select() // removed .single()
+      .select() // removed .single() for safety
 
     if (dbError) {
       console.error("❌ Database error:", dbError)
