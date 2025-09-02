@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { submitRegistration, type RegistrationData } from '../services/registrationService';
 
 interface RegisterPageProps {
   onNavigate: (page: 'home' | 'register' | 'thank-you') => void;
@@ -13,17 +14,48 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
     country: '',
     city: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // معالجة إرسال النموذج
-    console.log('Form data:', formData);
-    // التوجه إلى صفحة الشكر
-    onNavigate('thank-you');
+    
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      const registrationData: RegistrationData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        organization: formData.organization,
+        country: formData.country,
+        city: formData.city,
+      };
+
+      const result = await submitRegistration(registrationData);
+
+      if (result.success) {
+        setSubmitMessage({ type: 'success', text: result.message });
+        // التوجه إلى صفحة الشكر بعد ثانيتين
+        setTimeout(() => {
+          onNavigate('thank-you');
+        }, 2000);
+      } else {
+        setSubmitMessage({ type: 'error', text: result.message });
+      }
+    } catch (error) {
+      setSubmitMessage({ 
+        type: 'error', 
+        text: 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.' 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,6 +79,17 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
             <h2 className="text-brand-primary font-bold text-3xl mb-10 text-center">بيانات التسجيل</h2>
             
             <form onSubmit={handleSubmit} className="space-y-8">
+              {/* رسالة النجاح أو الخطأ */}
+              {submitMessage && (
+                <div className={`p-4 rounded-xl text-center font-bold ${
+                  submitMessage.type === 'success' 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  {submitMessage.text}
+                </div>
+              )}
+
               {/* الاسم الكامل */}
               <div>
                 <label className="block text-brand-primary mb-3 font-bold text-lg text-right">
@@ -58,6 +101,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                   placeholder="أدخل اسمك الكامل"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -73,6 +117,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                   placeholder="example@email.com"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -88,6 +133,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                   placeholder="+966 XX XXX XXXX"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -103,6 +149,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                   onChange={(e) => handleInputChange('organization', e.target.value)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                   placeholder="أدخل اسم المنظمة"
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -119,6 +166,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                     onChange={(e) => handleInputChange('country', e.target.value)}
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                     placeholder="أدخل اسم الدولة"
+                    disabled={isSubmitting}
                     required
                   />
                 </div>
@@ -134,6 +182,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                     placeholder="أدخل اسم المدينة"
+                    disabled={isSubmitting}
                     required
                   />
                 </div>
@@ -143,9 +192,14 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
               <div className="pt-6">
                 <button
                   type="submit"
-                  className="w-full bg-brand-primary text-white py-4 px-8 rounded-xl hover:opacity-90 transition-all transform hover:scale-105 shadow-lg font-bold text-lg"
+                  disabled={isSubmitting}
+                  className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all transform shadow-lg ${
+                    isSubmitting 
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                      : 'bg-brand-primary text-white hover:opacity-90 hover:scale-105'
+                  }`}
                 >
-                  إرسال طلب التسجيل
+                  {isSubmitting ? 'جاري الإرسال...' : 'إرسال طلب التسجيل'}
                 </button>
                 <p className="text-gray-500 text-center mt-4 text-sm">
                   سنتواصل معك خلال 24 ساعة من إرسال الطلب
