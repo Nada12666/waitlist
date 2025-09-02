@@ -24,8 +24,25 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate all required fields
+    if (!formData.fullName || !formData.email || !formData.phone || 
+        !formData.organization || !formData.country || !formData.city) {
+      setSubmitMessage({ 
+        type: 'error', 
+        text: 'يرجى ملء جميع الحقول المطلوبة' 
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitMessage(null);
+
+    console.log('Form submission started with data:', {
+      fullName: formData.fullName,
+      email: formData.email,
+      organization: formData.organization,
+      // Don't log sensitive data
+    });
 
     try {
       const registrationData: RegistrationData = {
@@ -39,6 +56,8 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
 
       const result = await submitRegistration(registrationData);
 
+      console.log('Registration result:', result);
+
       if (result.success) {
         setSubmitMessage({ type: 'success', text: result.message });
         // التوجه إلى صفحة الشكر بعد ثانيتين
@@ -46,12 +65,16 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
           onNavigate('thank-you');
         }, 2000);
       } else {
-        setSubmitMessage({ type: 'error', text: result.message });
+        setSubmitMessage({ 
+          type: 'error', 
+          text: result.error ? `${result.message}\n\nتفاصيل الخطأ: ${result.error}` : result.message 
+        });
       }
     } catch (error) {
+      console.error('Form submission error:', error);
       setSubmitMessage({ 
         type: 'error', 
-        text: 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.' 
+        text: `حدث خطأ غير متوقع: ${error instanceof Error ? error.message : 'Unknown error'}. يرجى المحاولة مرة أخرى.` 
       });
     } finally {
       setIsSubmitting(false);
