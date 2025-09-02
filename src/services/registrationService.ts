@@ -11,8 +11,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = 'https://jjatkmjggwtehzxfsbur.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
 )
 
 
