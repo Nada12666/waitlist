@@ -7,7 +7,7 @@ interface RegisterPageProps {
 
 export function RegisterPage({ onNavigate }: RegisterPageProps) {
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     phone: '',
     organization: '',
@@ -25,7 +25,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
     e.preventDefault();
     
     // Validate all required fields
-    if (!formData.fullName || !formData.email || !formData.phone || 
+    if (!formData.name || !formData.email || !formData.phone || 
         !formData.organization || !formData.country || !formData.city) {
       setSubmitMessage({ 
         type: 'error', 
@@ -38,7 +38,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
     setSubmitMessage(null);
 
     console.log('Form submission started with data:', {
-      fullName: formData.fullName,
+      name: formData.name,
       email: formData.email,
       organization: formData.organization,
       // Don't log sensitive data
@@ -46,7 +46,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
 
     try {
       const registrationData: RegistrationData = {
-        fullName: formData.fullName,
+        name: formData.name,
         email: formData.email,
         phone: formData.phone,
         organization: formData.organization,
@@ -120,8 +120,8 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                 </label>
                 <input
                   type="text"
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all text-lg bg-gray-50 hover:bg-white"
                   placeholder="أدخل اسمك الكامل"
                   disabled={isSubmitting}
