@@ -60,7 +60,7 @@ export async function submitRegistration(
       .from("registration_requests")
       .insert([
         {
-          name: data.name, // make sure this matches your table column
+          full_name: data.name, // matches the database column name
           email: data.email,
           phone: data.phone,
           organization: data.organization,
