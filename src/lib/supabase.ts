@@ -15,7 +15,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type RegistrationRequest = {
   id: string;
-  name: string;
+  full_name: string;
   email: string;
   phone: string;
   organization: string;
